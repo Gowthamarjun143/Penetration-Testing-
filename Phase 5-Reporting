@@ -1,1 +1,253 @@
+# Phase 5 – Reporting  
+## Comprehensive Penetration Testing Report
 
+---
+
+## 1. Executive Summary
+
+This penetration testing engagement was performed against a vulnerable Linux host (Metasploitable 2) to evaluate its security posture by simulating real-world attack techniques.  
+The assessment followed a **five-phase penetration testing methodology** and successfully demonstrated **multiple unauthenticated and authenticated remote compromises**, resulting in **root-level system access**.
+
+The test confirmed that the target system is **critically vulnerable**, primarily due to:
+- Outdated software
+- Known backdoored services
+- Weak authentication mechanisms
+- Legacy insecure protocols
+
+---
+
+## 2. Scope of Assessment
+
+### Target Details
+| Attribute | Value |
+|--------|------|
+| Target IP | `192.168.56.102` |
+| Operating System | Linux (Ubuntu-based) |
+| Kernel Version | `2.6.24-16-server` |
+| Environment | VirtualBox (Host-Only Network) |
+
+### Attacker System
+| Attribute | Value |
+|--------|------|
+| OS | Kali Linux |
+| Attacker IP | `192.168.56.1` |
+| Framework | Metasploit Framework |
+
+---
+
+## 3. Tools Used (Detailed)
+
+### 3.1 Reconnaissance & Scanning Tools
+| Tool | Purpose |
+|----|-------|
+| **Nmap** | Port scanning, service detection, version enumeration |
+| **Netdiscover** | Network host discovery |
+| **ifconfig / ip a** | Network interface identification |
+
+---
+
+### 3.2 Vulnerability Assessment Tools
+| Tool | Purpose |
+|----|-------|
+| **Searchsploit** | Mapping services to known exploits |
+| **Nmap NSE Scripts** | Service vulnerability detection |
+| **Metasploit Auxiliary Modules** | Authentication scanning |
+
+---
+
+### 3.3 Exploitation Tools
+| Tool | Purpose |
+|----|-------|
+| **Metasploit Framework** | Exploit execution and payload handling |
+| **VNC Viewer** | Remote desktop validation |
+| **Linux Shell Utilities** | Post-exploitation validation |
+
+---
+
+## 4. Identified Vulnerabilities & CVE Mapping
+
+### 4.1 FTP – vsftpd 2.3.4 Backdoor
+
+| Attribute | Details |
+|------|--------|
+| Service | FTP |
+| Port | 21 |
+| Version | vsftpd 2.3.4 |
+| CVE | **CVE-2011-2523** |
+| Severity | Critical |
+
+**Description:**  
+A malicious backdoor was intentionally inserted into vsftpd 2.3.4, allowing unauthenticated users to spawn a root shell on port 6200.
+
+**Impact:**  
+- Unauthenticated remote root access  
+- Full system compromise  
+
+---
+
+### 4.2 SMB – Samba Username Map Script
+
+| Attribute | Details |
+|------|--------|
+| Service | Samba |
+| Port | 139 |
+| Version | 3.0.20 |
+| CVE | **CVE-2007-2447** |
+| Severity | Critical |
+
+**Description:**  
+Improper input validation in the `username map script` option allows command injection during authentication.
+
+**Impact:**  
+- Remote code execution as root  
+- Complete compromise without credentials  
+
+---
+
+### 4.3 IRC – UnrealIRCd Backdoor
+
+| Attribute | Details |
+|------|--------|
+| Service | IRC |
+| Port | 6667 |
+| Version | UnrealIRCd 3.2.8.1 |
+| CVE | **CVE-2010-2075** |
+| Severity | Critical |
+
+**Description:**  
+The UnrealIRCd package was distributed with a backdoor allowing arbitrary command execution.
+
+**Impact:**  
+- Instant root shell  
+- Zero authentication required  
+
+---
+
+### 4.4 VNC – Weak Authentication
+
+| Attribute | Details |
+|------|--------|
+| Service | VNC |
+| Port | 5900 |
+| Protocol | RFB 3.3 |
+| CVE | **CWE-522 (Weak Authentication)** |
+| Severity | High |
+
+**Description:**  
+VNC service allowed weak or default authentication, enabling unauthorized graphical access.
+
+**Impact:**  
+- Remote desktop takeover  
+- Credential exposure  
+- Privilege escalation opportunities  
+
+---
+
+### 4.5 RSH – Insecure Legacy Authentication
+
+| Attribute | Details |
+|------|--------|
+| Service | RSH |
+| Port | 514 |
+| CVE | **CWE-306 (Missing Authentication)** |
+| Severity | High |
+
+**Description:**  
+RSH relies on trust-based authentication and transmits data in plaintext.
+
+**Impact:**  
+- Potential unauthorized command execution  
+- Credential sniffing  
+
+---
+
+### 4.6 Apache Tomcat Manager (Attempted)
+
+| Attribute | Details |
+|------|--------|
+| Service | HTTP / Tomcat |
+| Port | 80 |
+| CVE | CVE-2009-3548 |
+| Severity | Medium |
+
+**Result:**  
+Exploit attempt failed due to fingerprint mismatch, but exposure remains risky if credentials are obtained.
+
+---
+
+## 5. Exploitation Summary
+
+| Vulnerability | Exploited | Access Level |
+|-------------|---------|------------|
+| vsftpd Backdoor | Yes | Root |
+| Samba usermap | Yes | Root |
+| UnrealIRCd | Yes | Root |
+| VNC Weak Auth | Yes | Desktop |
+| RSH | Partial | Attack surface |
+| Tomcat Manager | No | Credential dependent |
+
+---
+
+## 6. Post-Exploitation Validation
+
+The following commands confirmed full compromise:
+
+- `whoami` → root  
+- `id` → uid=0  
+- `uname -a` → kernel disclosure  
+- `ifconfig` → network mapping  
+- `df -h` → disk enumeration  
+
+---
+
+## 7. Risk Assessment
+
+| Factor | Rating |
+|-----|-------|
+| Remote Code Execution | Critical |
+| Privilege Escalation | Critical |
+| Authentication Bypass | Critical |
+| Exploit Complexity | Low |
+| Business Impact | Severe |
+
+**Overall Risk Level: CRITICAL**
+
+---
+
+## 8. Root Cause Analysis
+
+- Absence of patch management
+- Use of end-of-life software
+- Insecure default configurations
+- Legacy protocols enabled
+- Lack of firewall restrictions
+
+---
+
+## 9. Remediation Recommendations
+
+### Immediate
+- Remove vsftpd 2.3.4
+- Disable Samba or upgrade
+- Remove UnrealIRCd
+- Disable RSH and VNC
+
+### Long-Term
+- Enforce patch management
+- Apply least-privilege principle
+- Use encrypted protocols (SSH, SFTP)
+- Conduct periodic penetration testing
+
+---
+
+## 10. Conclusion
+
+This penetration test demonstrated how **outdated and misconfigured services can lead to complete system compromise with minimal attacker effort**.  
+The system was compromised multiple times using public exploits, highlighting severe security weaknesses.
+
+---
+
+## 11. Disclaimer
+
+This penetration test was conducted **only for educational purposes in a controlled lab environment**.  
+Unauthorized testing on rea
