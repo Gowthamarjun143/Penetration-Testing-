@@ -103,8 +103,6 @@ The assessment is strictly limited to predefined IP ranges and systems.
 - Maintain logs of all executed commands and observed outputs.
 - Follow ethical penetration testing standards throughout engagement.
 
-
-
 This phase guide is used 
 # Prerequisites
 
